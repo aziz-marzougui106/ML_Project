@@ -1,5 +1,5 @@
 import numpy as np
-
+from utils import normalize_fn
 
 class LinearRegression(object):
     """
@@ -11,7 +11,9 @@ class LinearRegression(object):
         Initialize the new object (see dummy_methods.py)
         and set its arguments.
         """
-
+        self.mean=0
+        self.std=1
+        self.weights=None
     def fit(self, training_data, training_labels):
         """
         Trains the model, returns predicted labels for training data.
@@ -30,7 +32,12 @@ class LinearRegression(object):
         #### WRITE YOUR CODE HERE!
         ###
         ##
-        return pred_labels
+        self.mean=np.mean(training_data,axis=1,keepdims=True)
+        self.std=np.std(training_data,axis=1,keepdims=True)
+        one_colums=np.ones(training_data.shape[0],1)
+        biased_training_data=np.concatenate((one_colums,training_data),axis=1)
+        self.weights=np.linalg.pinv(biased_training_data)@training_labels
+        return self.weights@training_data
 
     def predict(self, test_data):
         """
@@ -46,4 +53,6 @@ class LinearRegression(object):
         #### WRITE YOUR CODE HERE!
         ###
         ##
-        return pred_labels
+        one_colums=np.ones(test_data.shape[0],1)
+        biased_test_data=np.concatenate((one_colums,normalize_fn(test_data,self.mean,self.std)),axis=1)
+        return self.weights@biased_test_data
