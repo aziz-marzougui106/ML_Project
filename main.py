@@ -51,15 +51,15 @@ def main(args):
 
     elif args.method == "knn":
         ### WRITE YOUR CODE HERE
-        pass
+        method_obj = KNN(args.K)
 
     elif args.method == "logistic_regression":
         ### WRITE YOUR CODE HERE
-        pass
+        method_obj= LogisticRegression(args.lr,args.max_iters) if args.max_iters else LogisticRegression(args.lr)
 
     elif args.method == "linear_regression":
         ### WRITE YOUR CODE HERE
-        pass
+        method_obj=LinearRegression()
 
     else:
         raise ValueError(f"Unknown method: {args.method}")
