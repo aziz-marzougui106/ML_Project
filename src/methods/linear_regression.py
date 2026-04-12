@@ -32,12 +32,8 @@ class LinearRegression(object):
         #### WRITE YOUR CODE HERE!
         ###
         ##
-        self.mean=np.mean(training_data,axis=1,keepdims=True)
-        self.std=np.std(training_data,axis=1,keepdims=True)
-        #one_colums=np.ones(training_data.shape[0],1)
-        biased_training_data=append_bias_term(training_data)#np.concatenate((one_colums,training_data),axis=1)
-        self.weights=np.linalg.pinv(biased_training_data)@training_labels
-        return self.weights@training_data
+        self.weights=np.linalg.pinv(training_data)@training_labels
+        return np.matmul(training_data,self.weights)
 
     def predict(self, test_data):
         """
@@ -53,6 +49,4 @@ class LinearRegression(object):
         #### WRITE YOUR CODE HERE!
         ###
         ##
-        one_colums=np.ones(test_data.shape[0],1)
-        biased_test_data=np.concatenate((one_colums,normalize_fn(test_data,self.mean,self.std)),axis=1)
-        return self.weights@biased_test_data
+        return test_data@self.weights
