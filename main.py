@@ -39,12 +39,30 @@ def main(args):
     # Make a validation set (it can overwrite xtest, ytest)
     if not args.test:
         ### WRITE YOUR CODE HERE
-        pass
+        n= train_features.shape[0]
+        indices=np.random.shuffle(n)
+        limit= int(0.8*n)
+        train_indx=indices[:limit]
+        test_indx=indices[limit:]
+        train_features=train_features[train_indx]
+        test_features=train_features[test_indx]
+        train_labels_reg=train_labels_reg[train_indx]
+        test_labels_reg=train_labels_reg[test_indx]
+        train_labels_classif=train_labels_classif[train_indx]
+        test_labels_classif=train_labels_classif[test_indx]
 
     ### WRITE YOUR CODE HERE to do any other data processing
 
     ## 3. Initialize the method you want to use.
-
+    #we can remove some data preparation operations to see their effects
+    if args.add_bias:
+        train_features= append_bias_term(train_features,mean,std)
+        test_features=append_bias_term(test_features,mean,std)
+    if args.normalize_data:
+        mean=np.mean(feature_data,keepdims=True)
+        std=np.std(feature_data,keepdims=True)
+        train_features= append_bias_term(normalize_fn(train_features,mean,std))
+        test_features=append_bias_term(normalize_fn(test_features,mean,std))
     # Follow the "DummyClassifier" example for your methods
     if args.method == "dummy_classifier":
         method_obj = DummyClassifier(arg1=1, arg2=2)
@@ -149,6 +167,13 @@ if __name__ == "__main__":
              "otherwise use a validation set",
     )
     # Feel free to add more arguments here if you need!
-
+    parser.add_argument(
+        "--normalize_data",
+        action="normalize the data"
+    )
+    parser.add_argument(
+        "--add bias",
+        action="add a bias term to the input data"
+    )
     args = parser.parse_args()
     main(args)
