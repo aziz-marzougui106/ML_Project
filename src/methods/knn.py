@@ -12,8 +12,6 @@ class KNN(object):
         """
         self.k = k
         self.task_kind = task_kind
-        self.mean=0
-        self.std=1
         self.training_data=None
         self.training_labels=None
     def fit(self, training_data, training_labels):
@@ -38,17 +36,14 @@ class KNN(object):
         ###
         ##
         predictions=[]
-        self.mean=np.mean(training_data,axis=0,keepdims=True)
-        self.std=np.std(training_data,axis=0,keepdims=True)
-        normalized=normalize_fn(training_data,self.mean,self.std)
         for data in training_data:
-            distances = self._euclidean_dist(data,normalized)
-            nn_indices = self._find_k_nearest_neighbors(self.k +1,distances)#there is a 0.0 distance
+            distances = self._euclidean_dist(data,training_data)
+            nn_indices = self._find_k_nearest_neighbors(self.k,distances)#there is a 0.0 distance
             neighbor_labels = training_labels[nn_indices]
             predictions.append(self._predict_label(neighbor_labels))
-        self.training_data=normalized
+        self.training_data=training_data
         self.training_labels=training_labels
-        return np.array(distances)
+        return np.array(predictions)
     def _euclidean_dist(self,example, training_examples):
         """Compute the Euclidean distance between a single example
         vector and all training_examples.
@@ -71,7 +66,7 @@ class KNN(object):
             most frequent label
         """
         return np.argmax(np.bincount(neighbor_labels))
-    def _find_k_nearest_neighbors(k, distances):
+    def _find_k_nearest_neighbors(self,k:int, distances):
         """ Find the indices of the k smallest distances from a list of distances.
             Tip: use np.argsort()
 
@@ -81,7 +76,7 @@ class KNN(object):
         Outputs:
             indices of the k nearest neighbors: shape (k,)
         """
-        indices = np.argsort(distances)[1:k+1]#there is 0.0 distance
+        indices = np.argsort(distances)[:k]#there is 0.0 distance
         return indices
     def _kNN_one_example(self,unlabeled_example, training_features, training_labels, k):
         """Returns the label of a single unlabelled example.
@@ -115,5 +110,4 @@ class KNN(object):
         #### YOUR CODE HERE!
         ###
         ##
-        normalized=normalize_fn(test_data,self.mean,self.std)
-        return np.apply_along_axis(self._kNN_one_example,1,normalized,self.training_data,self.training_labels,self.k)
+        return np.apply_along_axis(self._kNN_one_example,1,test_data,self.training_data,self.training_labels,self.k)
