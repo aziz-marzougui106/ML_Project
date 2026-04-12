@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from utils import normalize_fn
+from src.utils import normalize_fn
 class KNN(object):
     """
     kNN classifier object.

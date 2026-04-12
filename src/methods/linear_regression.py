@@ -1,6 +1,6 @@
 import numpy as np
-from utils import normalize_fn
-from utils import append_biais_term
+from src.utils import normalize_fn
+from src.utils import append_bias_term
 class LinearRegression(object):
     """
     Linear regression.
@@ -35,7 +35,7 @@ class LinearRegression(object):
         self.mean=np.mean(training_data,axis=1,keepdims=True)
         self.std=np.std(training_data,axis=1,keepdims=True)
         #one_colums=np.ones(training_data.shape[0],1)
-        biased_training_data=append_biais_term(training_data)#np.concatenate((one_colums,training_data),axis=1)
+        biased_training_data=append_bias_term(training_data)#np.concatenate((one_colums,training_data),axis=1)
         self.weights=np.linalg.pinv(biased_training_data)@training_labels
         return self.weights@training_data
 
