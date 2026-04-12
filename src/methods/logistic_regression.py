@@ -177,4 +177,4 @@ class LogisticRegression(object):
         #### WRITE YOUR CODE HERE!
         ###
         ##
-        return test_data@self.weights
+        return self._logistic_regression_predict(test_data,self.weights)
