@@ -167,15 +167,13 @@ if __name__ == "__main__":
              "otherwise use a validation set",
     )
     # Feel free to add more arguments here if you need!
-    parser.add_argument(
-        "--normalize_data",
-        action="store_true",
-        help="normalize the data"
-    )
-    parser.add_argument(
-        "--add bias",
-        action="store_true",
-        help="add a bias term to the input data"
-    )
+    #parser.add_argument(
+    #    "--normalize_data",
+    #    action="normalize the data"
+    #)
+    #parser.add_argument(
+    #    "--add bias",
+    #    action="add a bias term to the input data"
+    #)
     args = parser.parse_args()
-    main(args)
+    #main(args)
