@@ -40,7 +40,7 @@ def main(args):
     if not args.test:
         ### WRITE YOUR CODE HERE
         n= train_features.shape[0]
-        indices=np.random.shuffle(n)
+        indices=np.random.shuffle(np.arange(n))
         limit= int(0.8*n)
         train_indx=indices[:limit]
         test_indx=indices[limit:]
@@ -173,7 +173,7 @@ if __name__ == "__main__":
         help="normalize the data"
     )
     parser.add_argument(
-        "--add bias",
+        "--add_bias",
         action="store_true",
         help="add a bias term to the input data"
     )
