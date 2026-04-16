@@ -40,9 +40,9 @@ class KNN(object):
             distances = self._euclidean_dist(data,training_data)
             nn_indices = self._find_k_nearest_neighbors(self.k,distances)#there is a 0.0 distance
             neighbor_labels = training_labels[nn_indices]
-            predictions.append(self._predict_label(neighbor_labels))
+            predictions.append(self._predict_label(neighbor_labels.astype(int)))
         self.training_data=training_data
-        self.training_labels=training_labels
+        self.training_labels=training_labels.astype(int)
         return np.array(predictions)
     def _euclidean_dist(self,example, training_examples):
         """Compute the Euclidean distance between a single example

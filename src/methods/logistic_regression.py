@@ -37,6 +37,7 @@ class LogisticRegression(object):
         ##
         #i can store the weights and keep the maximum in the sense accuracy is maximized
         max_accuracy=0
+        print(training_labels.shape)
         weights = np.random.normal(0., 0.1, [training_data.shape[1],])
         predictions=np.empty(training_labels.shape)
         for it in range(self.max_iters):
@@ -52,6 +53,7 @@ class LogisticRegression(object):
                 self.weights=weights
                 break
             if accuracy> max_accuracy:
+                max_accuracy=accuracy
                 self.weights=weights
         #return weights
         return predictions
@@ -99,69 +101,69 @@ class LogisticRegression(object):
         predictions = np.where(arr<0.5,0,1)
         return predictions.astype(int)
     
-    def _f_softmax(self,data, W):
-        """
-        Softmax function for multi-class logistic regression.
+    # def _f_softmax(self,data, W):
+    #     """
+    #     Softmax function for multi-class logistic regression.
         
-        Args:
-            data (array): Input data of shape (N, D)
-            W (array): Weights of shape (D, C) where C is the number of classes
-        Returns:
-            array of shape (N, C): Probability array where each value is in the
-                range [0, 1] and each row sums to 1.
-                The row i corresponds to the prediction of the ith data sample, and
-                the column j to the jth class. So element [i, j] is P(y_i=k_j | x_i, W)
-        """
-        ### WRITE YOUR CODE HERE 
-        # Hint: try to decompose the above formula in different steps to avoid recomputing the same things.
-        new_matrix = np.vectorize(lambda x: np.exp(x))(data@W)
-        sums = new_matrix@np.ones(W.shape[1])
-        return np.array([x/y for (x,y) in zip(new_matrix,sums)])
+    #     Args:
+    #         data (array): Input data of shape (N, D)
+    #         W (array): Weights of shape (D, C) where C is the number of classes
+    #     Returns:
+    #         array of shape (N, C): Probability array where each value is in the
+    #             range [0, 1] and each row sums to 1.
+    #             The row i corresponds to the prediction of the ith data sample, and
+    #             the column j to the jth class. So element [i, j] is P(y_i=k_j | x_i, W)
+    #     """
+    #     ### WRITE YOUR CODE HERE 
+    #     # Hint: try to decompose the above formula in different steps to avoid recomputing the same things.
+    #     new_matrix = np.vectorize(lambda x: np.exp(x))(data@W)
+    #     sums = new_matrix@np.ones(W.shape[1])
+    #     return np.array([x/y for (x,y) in zip(new_matrix,sums)])
     
-    def _loss_logistic_multi(self,data, labels, w):
-        """ 
-        Loss function for multi class logistic regression, i.e., multi-class entropy.
+    # def _loss_logistic_multi(self,data, labels, w):
+    #     """ 
+    #     Loss function for multi class logistic regression, i.e., multi-class entropy.
         
-        Args:
-            data (array): Input data of shape (N, D)
-            labels (array): Labels of shape  (N, C)  (in one-hot representation)
-            w (array): Weights of shape (D, C)
-        Returns:
-            float: Loss value 
-        """
-        ### WRITE YOUR CODE HERE 
-        return -sum([ y*t for (Y,T) in zip(np.vectorize(lambda x: np.log(x))(self._f_softmax(data,w)),labels) for (y,t) in zip(Y,T) ])
+    #     Args:
+    #         data (array): Input data of shape (N, D)
+    #         labels (array): Labels of shape  (N, C)  (in one-hot representation)
+    #         w (array): Weights of shape (D, C)
+    #     Returns:
+    #         float: Loss value 
+    #     """
+    #     ### WRITE YOUR CODE HERE 
+    #     return -sum([ y*t for (Y,T) in zip(np.vectorize(lambda x: np.log(x))(self._f_softmax(data,w)),labels) for (y,t) in zip(Y,T) ])
 
-    def _gradient_logistic_multi(self,data, labels, W):
-        """
-        Compute the gradient of the entropy for multi-class logistic regression.
+    # def _gradient_logistic_multi(self,data, labels, W):
+    #     """
+    #     Compute the gradient of the entropy for multi-class logistic regression.
         
-        Args:
-            data (array): Input data of shape (N, D)
-            labels (array): Labels of shape  (N, C)  (in one-hot representation)
-            W (array): Weights of shape (D, C)
-        Returns:
-            grad (np.array): Gradients of shape (D, C)
-        """
-        predictions=self._f_softmax(data,W)
-        res=np.matmul(data.T,(predictions-labels))
-        return res
+    #     Args:
+    #         data (array): Input data of shape (N, D)
+    #         labels (array): Labels of shape  (N, C)  (in one-hot representation)
+    #         W (array): Weights of shape (D, C)
+    #     Returns:
+    #         grad (np.array): Gradients of shape (D, C)
+    #     """
+    #     predictions=self._f_softmax(data,W)
+    #     res=np.matmul(data.T,(predictions-labels))
+    #     return res
     
-    def logistic_regression_predict_multi(self,data, W):
-        """
-        Prediction the label of data for multi-class logistic regression.
+    # def logistic_regression_predict_multi(self,data, W):
+    #     """
+    #     Prediction the label of data for multi-class logistic regression.
         
-        Args:
-            data (array): Dataset of shape (N, D).
-            W (array): Weights of multi-class logistic regression model of shape (D, C)
-        Returns:
-            array of shape (N,): Label predictions of data.
-        """
-        res=np.argmax(self._f_softmax(data,W)).T
-        print(res.shape)
-        print(res)
-        #return np.array([np.argmax(x) for x in f_softmax(data,W)])
-        return np.argmax(self._f_softmax(data,W)).T
+    #     Args:
+    #         data (array): Dataset of shape (N, D).
+    #         W (array): Weights of multi-class logistic regression model of shape (D, C)
+    #     Returns:
+    #         array of shape (N,): Label predictions of data.
+    #     """
+    #     res=np.argmax(self._f_softmax(data,W)).T
+    #     print(res.shape)
+    #     print(res)
+    #     #return np.array([np.argmax(x) for x in f_softmax(data,W)])
+    #     return np.argmax(self._f_softmax(data,W)).T
 
     def predict(self, test_data):
         """
