@@ -57,8 +57,8 @@ def main(args):
     #we can remove some data preparation operations to see their effects
     
     if args.normalize_data:
-        mean=np.mean(train_features,keepdims=True)
-        std=np.std(train_features,keepdims=True)
+        mean=np.mean(train_features, axis=0,keepdims=True)
+        std=np.std(train_features, axis=0,keepdims=True)
         train_features= normalize_fn(train_features,mean,std)
         test_features= normalize_fn(test_features,mean,std)
     # Follow the "DummyClassifier" example for your methods
@@ -70,7 +70,7 @@ def main(args):
 
     elif args.method == "knn":
         ### WRITE YOUR CODE HERE
-        method_obj = KNN(args.K)
+        method_obj = KNN(args.K, args.task)
 
     elif args.method == "logistic_regression":
         ### WRITE YOUR CODE HERE
