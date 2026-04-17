@@ -67,10 +67,8 @@ class KNN(object):
         """
         if self.task_kind == "regression":
             return np.mean(neighbor_labels)
-        elif self.task_kind == "classification":
-            return np.argmax(np.bincount(neighbor_labels.astype(int)))
         else:
-            raise ValueError(f"Unknown task_kind: {self.task_kind}")
+            return np.argmax(np.bincount(neighbor_labels.astype(int)))
     def _find_k_nearest_neighbors(self,k:int, distances):
         """ Find the indices of the k smallest distances from a list of distances.
             Tip: use np.argsort()
