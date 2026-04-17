@@ -55,15 +55,16 @@ def main(args):
 
     ## 3. Initialize the method you want to use.
     #we can remove some data preparation operations to see their effects
-    if args.add_bias:
-        train_features= append_bias_term(train_features)
-        test_features=append_bias_term(test_features)
+    
     if args.normalize_data:
         mean=np.mean(train_features,keepdims=True)
         std=np.std(train_features,keepdims=True)
         train_features= normalize_fn(train_features,mean,std)
         test_features= normalize_fn(test_features,mean,std)
     # Follow the "DummyClassifier" example for your methods
+    if args.add_bias:
+        train_features= append_bias_term(train_features)
+        test_features=append_bias_term(test_features)
     if args.method == "dummy_classifier":
         method_obj = DummyClassifier(arg1=1, arg2=2)
 
