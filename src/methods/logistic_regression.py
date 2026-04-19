@@ -40,10 +40,14 @@ class LogisticRegression(object):
         hot_labels =label_to_onehot(training_labels)
         weights = np.random.normal(0., 0.1, (training_data.shape[1],3))
         predictions=np.empty(training_labels.shape)
+        G = np.zeros_like(weights)
+        eps = 1e-8
         for it in range(self.max_iters):
             ############# WRITE YOUR CODE HERE: find the gradient and do a gradient step
             gradient = self._gradient_logistic_multi(training_data,hot_labels,weights)
-            weights = weights- self.lr*gradient
+            G += gradient**2
+            adjusted_lr = self.lr / (np.sqrt(G) + eps)
+            weights = weights- adjusted_lr*gradient
             ##################################
             
             # If we reach 100% accuracy, we can stop training immediately
