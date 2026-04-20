@@ -5,7 +5,7 @@ from src.methods.dummy_methods import DummyClassifier
 from src.methods.logistic_regression import LogisticRegression
 from src.methods.linear_regression import LinearRegression
 from src.methods.knn import KNN
-from src.utils import normalize_fn, append_bias_term, accuracy_fn, macrof1_fn, mse_fn
+from src.utils import normalize_fn, append_bias_term, accuracy_fn, macrof1_fn, mse_fn, k_fold_cross_validation
 import os
 
 np.random.seed(100)
@@ -36,20 +36,29 @@ def main(args):
     ## 2. Then we must prepare it. This is where you can create a validation set,
     #  normalize, add bias, etc.
 
+    # Save full training data for k-fold CV
+    full_train_features = train_features.copy()
+    full_train_labels_reg = train_labels_reg.copy()
+    full_train_labels_classif = train_labels_classif.copy()
+
     # Make a validation set (it can overwrite xtest, ytest)
     if not args.test:
         ### WRITE YOUR CODE HERE
-        n= train_features.shape[0]
-        indices=np.random.shuffle(np.arange(n))
-        limit= int(0.8*n)
-        train_indx=indices[:limit]
-        test_indx=indices[limit:]
-        train_features=train_features[train_indx]
-        test_features=train_features[test_indx]
-        train_labels_reg=train_labels_reg[train_indx]
-        test_labels_reg=train_labels_reg[test_indx]
-        train_labels_classif=train_labels_classif[train_indx]
-        test_labels_classif=train_labels_classif[test_indx]
+        n = np.arange(train_features.shape[0])
+        np.random.shuffle(n)
+        limit = int(0.8 * train_features.shape[0])
+        train_indx = n[:limit]
+        test_indx = n[limit:]
+        # Use copies to avoid modifying original
+        original_train_features = train_features.copy()
+        original_train_labels_reg = train_labels_reg.copy()
+        original_train_labels_classif = train_labels_classif.copy()
+        train_features = original_train_features[train_indx]
+        test_features = original_train_features[test_indx]
+        train_labels_reg = original_train_labels_reg[train_indx]
+        test_labels_reg = original_train_labels_reg[test_indx]
+        train_labels_classif = original_train_labels_classif[train_indx]
+        test_labels_classif = original_train_labels_classif[test_indx]
 
     ### WRITE YOUR CODE HERE to do any other data processing
 
@@ -61,10 +70,14 @@ def main(args):
         std=np.std(train_features, axis=0,keepdims=True)
         train_features= normalize_fn(train_features,mean,std)
         test_features= normalize_fn(test_features,mean,std)
+        if args.kfold:
+            full_train_features = normalize_fn(full_train_features, mean, std)
     # Follow the "DummyClassifier" example for your methods
     if args.add_bias:
         train_features= append_bias_term(train_features)
         test_features=append_bias_term(test_features)
+        if args.kfold:
+            full_train_features = append_bias_term(full_train_features)
     if args.method == "dummy_classifier":
         method_obj = DummyClassifier(arg1=1, arg2=2)
 
@@ -119,6 +132,15 @@ def main(args):
 
     else:
         raise ValueError(f"Unknown task: {args.task}")
+
+    # Optional k-fold cross-validation
+    if args.kfold:
+        if args.task == "classification":
+            results = k_fold_cross_validation(full_train_features, full_train_labels_classif, method_obj, k=args.kfold)
+            print(f"K-fold CV ({args.kfold} folds): accuracy = {results['accuracy']:.3f}% - F1-score = {results['macrof1']:.6f}")
+        elif args.task == "regression":
+            results = k_fold_cross_validation(full_train_features, full_train_labels_reg, method_obj, k=args.kfold)
+            print(f"K-fold CV ({args.kfold} folds): MSE = {results['mse']:.6f}")
 
     ### WRITE YOUR CODE HERE if you want to add other outputs, visualization, etc.
 
@@ -177,6 +199,12 @@ if __name__ == "__main__":
         "--add_bias",
         action="store_true",
         help="add a bias term to the input data"
+    )
+    parser.add_argument(
+        "--kfold",
+        type=int,
+        default=None,
+        help="number of folds for k-fold cross-validation (if set, runs CV instead of train/test split)"
     )
     args = parser.parse_args()
     main(args)

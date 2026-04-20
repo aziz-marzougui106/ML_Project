@@ -126,3 +126,59 @@ def mse_fn(pred, gt):
     loss = (pred - gt) ** 2
     loss = np.mean(loss)
     return loss
+
+
+def k_fold_cross_validation(X, y, model, k=5, random_state=None):
+    """
+    Perform k-fold cross-validation and compute average metrics.
+
+    Arguments:
+        X (np.array): features, shape (N, D)
+        y (np.array): labels, shape (N,)
+        model: model instance with fit(X, y) and predict(X) methods
+        k (int): number of folds
+        random_state (int): seed for reproducibility
+    Returns:
+        dict: average accuracy, macro F1, and MSE over the k folds
+    """
+    if random_state is not None:
+        np.random.seed(random_state)
+    
+    N = X.shape[0]
+    indices = np.arange(N)
+    np.random.shuffle(indices)
+    X = X[indices]
+    y = y[indices]
+    
+    fold_sizes = np.full(k, N // k, dtype=int)
+    fold_sizes[:N % k] += 1
+    
+    accuracies = []
+    macrof1s = []
+    mses = []
+    
+    start = 0
+    for fold_size in fold_sizes:
+        end = start + fold_size
+        test_indices = np.arange(start, end)
+        train_indices = np.concatenate([np.arange(0, start), np.arange(end, N)])
+        
+        X_train = X[train_indices]
+        y_train = y[train_indices]
+        X_test = X[test_indices]
+        y_test = y[test_indices]
+        
+        model.fit(X_train, y_train)
+        pred = model.predict(X_test)
+        
+        accuracies.append(accuracy_fn(pred, y_test))
+        macrof1s.append(macrof1_fn(pred, y_test))
+        mses.append(mse_fn(pred, y_test))
+        
+        start = end
+    
+    return {
+        'accuracy': np.mean(accuracies),
+        'macrof1': np.mean(macrof1s),
+        'mse': np.mean(mses)
+    }
