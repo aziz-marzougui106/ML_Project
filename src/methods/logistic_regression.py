@@ -1,14 +1,15 @@
 import numpy as np
 
 from ..utils import get_n_classes, label_to_onehot, onehot_to_label,accuracy_fn
-
+from src.methods.ada_grad import AdaGrad
+from src.methods.adam import Adam
 
 class LogisticRegression(object):
     """
     Logistic regression classifier.
     """
 
-    def __init__(self, lr, max_iters=500):
+    def __init__(self, lr, max_iters=500,optimizer=None):
         """
         Initialize the new object (see dummy_methods.py)
         and set its arguments.
@@ -19,8 +20,14 @@ class LogisticRegression(object):
         """
         self.lr = lr
         self.max_iters = max_iters
+        if optimizer == "adagrad":
+            self.optimizer = AdaGrad(lr=lr)
+        elif optimizer == "adam":
+            self.optimizer = Adam(lr=lr)
+        else:
+            self.optimizer = None
         self.weights=None
-    def fit(self, training_data, training_labels):
+    def fit(self, training_data, training_labels,sample_weights=None):
         """
         Trains the model, returns predicted labels for training data.
 
@@ -36,14 +43,20 @@ class LogisticRegression(object):
         ###
         ##
         #i can store the weights and keep the maximum in the sense accuracy is maximized
-        max_accuracy=0
+        if sample_weights is None:
+            sample_weights = np.ones(len(training_labels))
+        sample_weights = sample_weights / sample_weights.sum()  # normalize
+        best_iter=0
         hot_labels =label_to_onehot(training_labels)
         weights = np.random.normal(0., 0.1, (training_data.shape[1],3))
         predictions=np.empty(training_labels.shape)
         for it in range(self.max_iters):
             ############# WRITE YOUR CODE HERE: find the gradient and do a gradient step
-            gradient = self._gradient_logistic_multi(training_data,hot_labels,weights)
-            weights = weights- self.lr*gradient
+            gradient = self._gradient_logistic_multi(training_data,hot_labels,weights,sample_weights)
+            if self.optimizer:
+                weights = self.optimizer.penalize(weights, gradient)
+            else:
+                weights -= self.lr * gradient
             ##################################
             
             # If we reach 100% accuracy, we can stop training immediately
@@ -52,9 +65,11 @@ class LogisticRegression(object):
             if  accuracy== 100:
                 self.weights=weights
                 break
-            if accuracy> max_accuracy:
-                max_accuracy=accuracy
-                self.weights=weights
+            # if accuracy> max_accuracy:
+            #     max_accuracy=accuracy
+            #     best_iter=it
+            #     self.weights=weights
+        self.weights=weights
         return predictions
 
     
@@ -95,7 +110,7 @@ class LogisticRegression(object):
         ### WRITE YOUR CODE HERE 
         probs = self._f_softmax(data, w)
         return - np.sum(labels * np.log(probs))
-    def _gradient_logistic_multi(self,data, labels, W):
+    def _gradient_logistic_multi(self,data, labels, W,sample_weights):
         """
         Compute the gradient of the entropy for multi-class logistic regression.
         
@@ -107,7 +122,7 @@ class LogisticRegression(object):
             grad (np.array): Gradients of shape (D, C)
         """
         predictions=self._f_softmax(data,W)
-        res=data.T@(predictions-labels)
+        res=data.T@((predictions-labels)*sample_weights[:, None])
         return res
     
     def _logistic_regression_predict_multi(self,data, W):

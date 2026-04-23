@@ -5,7 +5,8 @@ from src.methods.dummy_methods import DummyClassifier
 from src.methods.logistic_regression import LogisticRegression
 from src.methods.linear_regression import LinearRegression
 from src.methods.knn import KNN
-from src.utils import normalize_fn, append_bias_term, accuracy_fn, macrof1_fn, mse_fn, k_fold_cross_validation
+import heatmap
+from src.utils import normalize_fn, append_bias_term, accuracy_fn, macrof1_fn, mse_fn, k_fold_cross_validation,grid_search_LOGREG,k_search_KNN
 import os
 
 np.random.seed(100)
@@ -78,6 +79,7 @@ def main(args):
         test_features=append_bias_term(test_features)
         if args.kfold:
             full_train_features = append_bias_term(full_train_features)
+    
     if args.method == "dummy_classifier":
         method_obj = DummyClassifier(arg1=1, arg2=2)
 
@@ -87,7 +89,7 @@ def main(args):
 
     elif args.method == "logistic_regression":
         ### WRITE YOUR CODE HERE
-        method_obj= LogisticRegression(args.lr,args.max_iters) if args.max_iters else LogisticRegression(args.lr)
+        method_obj= LogisticRegression(args.lr,args.max_iters,args.optimizer) if args.max_iters else LogisticRegression(args.lr,optimizer=args.optimizer)
 
     elif args.method == "linear_regression":
         ### WRITE YOUR CODE HERE
@@ -100,13 +102,25 @@ def main(args):
 
     if args.task == "classification":
         assert args.method != "linear_regression", f"You should use linear regression as a regression method"
+        #Compute weights inversely proportional to class frequency
+        classes, counts = np.unique(train_labels_classif, return_counts=True)
+        weights = len(train_labels_classif) / (len(classes) * counts)
+        class_weight_dict = dict(zip(classes, weights))
+
+        # Then build a per-sample weight array
+        sample_weights = np.array([class_weight_dict[label] for label in train_labels_classif])
         # Fit the method on training data
-        preds_train = method_obj.fit(train_features, train_labels_classif)
+        preds_train = method_obj.fit(train_features, train_labels_classif)#
 
         # Predict on unseen data
         preds = method_obj.predict(test_features)
-
-        # Report results: performance on train and valid/test sets
+        #for experiment
+        learning_rates = np.logspace(-2, -1, 200)
+        max_iterations_list = np.linspace(800,1000,10,dtype=int)
+        #k_values=np.linspace(1,60,dtype=int);
+        #
+        #k_search_KNN(train_features,train_labels_classif,test_features,test_labels_classif,k_values)
+        #heatmap.grid_search_LOGREG(train_features,train_labels_classif,test_features,test_labels_classif,learning_rates,max_iterations_list)
         acc = accuracy_fn(preds_train, train_labels_classif)
         macrof1 = macrof1_fn(preds_train, train_labels_classif)
         print(f"\nTrain set: accuracy = {acc:.3f}% - F1-score = {macrof1:.6f}")
@@ -205,6 +219,12 @@ if __name__ == "__main__":
         type=int,
         default=None,
         help="number of folds for k-fold cross-validation (if set, runs CV instead of train/test split)"
+    )
+    parser.add_argument(
+        "--optimizer",
+        type=str,
+        default=None,
+        help="the type of optimizer used during classification problem"
     )
     args = parser.parse_args()
     main(args)
